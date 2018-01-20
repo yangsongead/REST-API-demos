@@ -241,7 +241,7 @@ def orders_matchresults(symbol, types=None, start_date=None, end_date=None, _fro
 
 
 # 申请提现虚拟币
-def withdraw(address_id, amount, currency, fee=0, addr_tag=""):
+def withdraw(address, amount, currency, fee=0, addr_tag=""):
     """
 
     :param address_id: 
@@ -254,7 +254,7 @@ def withdraw(address_id, amount, currency, fee=0, addr_tag=""):
               "data": 700
             }
     """
-    params = {'address-id': address_id,
+    params = {'address': address,
               'amount': amount,
               "currency": currency,
               "fee": fee,
