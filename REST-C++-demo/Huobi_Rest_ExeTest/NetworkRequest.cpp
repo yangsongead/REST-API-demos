@@ -11,26 +11,37 @@ using namespace std;
 using namespace boost;
 using boost::asio::ip::tcp;
 
-// POSTÇëÇó  
+// POSTè¯·æ±‚  
 CString PostRequest(CString CShost, CString path, CString form)
 {
 	char *host = CShost.GetBuffer(CShost.GetLength());
 	long length = form.GetLength();
-
-	// ÉùÃ÷Asio»ù´¡: io_service£¨ÈÎÎñµ÷¶È»ú£©  
+	//form.Replace("\t", "");
+	// å£°æ˜AsioåŸºç¡€: io_serviceï¼ˆä»»åŠ¡è°ƒåº¦æœºï¼‰  
 	boost::asio::io_service io_service;
 
-	// »ñÈ¡·şÎñÆ÷ÖÕ¶ËÁĞ±í  
+	// è·å–æœåŠ¡å™¨ç»ˆç«¯åˆ—è¡¨  
 	tcp::resolver resolver(io_service);
 	tcp::resolver::query query(host, "http");
 	tcp::resolver::iterator iter = resolver.resolve(query);
 
-	// ³¢ÊÔÁ¬½ÓÃ¿Ò»¸öÖÕ¶Ë£¬Ö±µ½³É¹¦½¨Á¢socketÁ¬½Ó  
+	// å°è¯•è¿æ¥æ¯ä¸€ä¸ªç»ˆç«¯ï¼Œç›´åˆ°æˆåŠŸå»ºç«‹socketè¿æ¥  
 	tcp::socket socket(io_service);
-	boost::asio::connect(socket, iter);
+ 	try
+ 	{
+		boost::asio::connect(socket, iter);
+//		cout << "boost::asio::connect(socket, iter);" << endl;
+ 	}
+ 	catch (boost::system::system_error ec)
+ 	{
+		cout << ec.what()<<endl;
+		//throw boost::system::system_error(ec);
+		//cout << "connect_error:" << ec <<endl;
+ 		return "connect_error";
+ 	}
 
-	// ¹¹½¨ÍøÂçÇëÇóÍ·  
-	// Ö¸¶¨ "Connection: close" ÔÚ»ñÈ¡Ó¦´ğºó¶Ï¿ªÁ¬½Ó£¬È·±£»ñÎÄ¼şÈ«²¿Êı¾İ¡£  
+	// æ„å»ºç½‘ç»œè¯·æ±‚å¤´  
+	// æŒ‡å®š "Connection: close" åœ¨è·å–åº”ç­”åæ–­å¼€è¿æ¥ï¼Œç¡®ä¿è·æ–‡ä»¶å…¨éƒ¨æ•°æ®ã€‚  
 	boost::asio::streambuf request;
 	ostream request_stream(&request);
 	request_stream << "POST " << path << " HTTP/1.1\r\n";
@@ -39,19 +50,30 @@ CString PostRequest(CString CShost, CString path, CString form)
 	//request_stream << "Accept: */*\r\n";
 	request_stream << "Content-Type:application/json\r\n";
 	request_stream << "Content-Length: " << length << "\r\n";
-	request_stream << "Connection: close\r\n\r\n"; // ×¢ÒâÕâÀïÊÇÁ½¸ö¿ÕĞĞ  
-	request_stream << form; //POST ·¢ËÍµÄÊı¾İ±¾Éí²»°üº¬¶àÓÚ¿ÕĞĞ  
+	request_stream << "Connection: close\r\n\r\n"; // æ³¨æ„è¿™é‡Œæ˜¯ä¸¤ä¸ªç©ºè¡Œ  
+	request_stream << form; //POST å‘é€çš„æ•°æ®æœ¬èº«ä¸åŒ…å«å¤šäºç©ºè¡Œ  
 
-							// ·¢ËÍÇëÇó  
+							// å‘é€è¯·æ±‚  
 	boost::asio::write(socket, request);
 
-	// ¶ÁÈ¡Ó¦´ğ×´Ì¬. Ó¦´ğ»º³åÁ÷ streambuf »á×Ô¶¯Ôö³¤ÖÁÍêÕûµÄĞĞ  
-	// ¸ÃÔö³¤¿ÉÒÔÔÚ¹¹Ôì»º³åÁ÷Ê±Í¨¹ıÉèÖÃ×î´óÖµÏŞÖÆ  
+	//cout << "boost::asio::write(socket, request);" << endl;
+	// è¯»å–åº”ç­”çŠ¶æ€. åº”ç­”ç¼“å†²æµ streambuf ä¼šè‡ªåŠ¨å¢é•¿è‡³å®Œæ•´çš„è¡Œ  
+	// è¯¥å¢é•¿å¯ä»¥åœ¨æ„é€ ç¼“å†²æµæ—¶é€šè¿‡è®¾ç½®æœ€å¤§å€¼é™åˆ¶  
 	boost::asio::streambuf response;
-	boost::asio::read_until(socket, response, "\r\n");
-
-	// ¼ì²éÓ¦´ğÊÇ·ñOK.  
-	istream response_stream(&response);// Ó¦´ğÁ÷  
+	try
+	{
+		boost::asio::read_until(socket, response, "\r\n");
+	}
+	catch (...)
+	{
+			//cout << ec.what() << endl;
+			//throw boost::system::system_error(ec);
+			//cout << "connect_error:" << ec <<endl;
+			return "connect_error";
+	}
+	//cout << "boost::asio::read_until(socket, response, \"\\r\\n\");" << endl;
+	// æ£€æŸ¥åº”ç­”æ˜¯å¦OK.  
+	istream response_stream(&response);// åº”ç­”æµ  
 	string http_version;
 	response_stream >> http_version;
 	unsigned int status_code;
@@ -60,17 +82,19 @@ CString PostRequest(CString CShost, CString path, CString form)
 	getline(response_stream, status_message);
 	if (!response_stream || http_version.substr(0, 5) != "HTTP/")
 	{
-		printf(" error ÎŞĞ§ÏìÓ¦\n");
+		printf(" error æ— æ•ˆå“åº”\n");
 	}
 	if (status_code != 200)
 	{
-		printf(" error ÏìÓ¦·µ»Ø status code %d\n", status_code);
+		printf(" error å“åº”è¿”å› status code %d\n", status_code);
 	}
+	//cout << "getline(response_stream, status_message);" << endl;
 
-	// ¶ÁÈ¡Ó¦´ğÍ·²¿£¬Óöµ½¿ÕĞĞºóÍ£Ö¹  
+	// è¯»å–åº”ç­”å¤´éƒ¨ï¼Œé‡åˆ°ç©ºè¡Œååœæ­¢  
 	boost::asio::read_until(socket, response, "\r\n\r\n");
 
-	// ÏÔÊ¾Ó¦´ğÍ·²¿  
+	//cout << "boost::asio::read_until" << endl;
+	// æ˜¾ç¤ºåº”ç­”å¤´éƒ¨  
 	string header;
 	int len = 0;
 	while (getline(response_stream, header) && header != "\r")
@@ -88,31 +112,34 @@ CString PostRequest(CString CShost, CString path, CString form)
 		// .... do nothing  
 	}
 
-	// Ñ­»·¶ÁÈ¡Êı¾İÁ÷£¬Ö±µ½ÎÄ¼ş½áÊø  
+	// å¾ªç¯è¯»å–æ•°æ®æµï¼Œç›´åˆ°æ–‡ä»¶ç»“æŸ  
 	boost::system::error_code error;
 	while (boost::asio::read(socket, response, boost::asio::transfer_at_least(1), error))
 	{
-		// »ñÈ¡Ó¦´ğ³¤¶È  
+		// è·å–åº”ç­”é•¿åº¦  
 		size = response.size();
 		if (len != 0) {
-			cout << size << "  Byte  " << (size * 100) / len << "%\n";
+			//cout << size << "  Byte  " << (size * 100) / len << "%\n";
 		}
 
 	}
+
+	//cout << "boost::asio::read" << endl;
 	if (error != boost::asio::error::eof)
 	{
 		throw boost::system::system_error(error);
 	}
 
-	cout << size << " Byte ÄÚÈİÒÑÏÂÔØÍê±Ï." << endl;
+	//cout << size << " Byte å†…å®¹å·²ä¸‹è½½å®Œæ¯•." << endl;
 
-	// ½«streambufÀàĞÍ×ª»»ÎªCStringÀàĞÍ·µ»Ø  
+	// å°†streambufç±»å‹è½¬æ¢ä¸ºCStringç±»å‹è¿”å›  
 	istream is(&response);
 	is.unsetf(ios_base::skipws);
 	string sz;
 	sz.append(istream_iterator<char>(is), istream_iterator<char>());
+	//cout << "å‘é€ç»“æŸ;" << endl;
 
-	// ·µ»Ø×ª»»ºóµÄ×Ö·û´®  
+	// è¿”å›è½¬æ¢åçš„å­—ç¬¦ä¸²  
 	return sz.c_str();
 }
 
@@ -129,12 +156,12 @@ CString GetRequest(CString sendmsg)
 	memset(buffer, 0, 1);
 	internetopen = InternetOpen(_T("Testing"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	if (internetopen == NULL) {
-		//cout << "InternetOpen³õÊ¼»¯Ê§°Ü!" << endl;
+		//cout << "InternetOpenåˆå§‹åŒ–å¤±è´¥!" << endl;
 		return "Can't InternetOpen!";
 	}
 	internetopenurl = InternetOpenUrl(internetopen, sendmsg, NULL, 0, INTERNET_FLAG_RELOAD, 0);
 	if (internetopenurl == NULL) {
-		//cout << "InternetOpenUrl´ò¿ªUrlÊ§°Ü!" << endl;
+		//cout << "InternetOpenUrlæ‰“å¼€Urlå¤±è´¥!" << endl;
 		InternetCloseHandle(internetopen);
 		return "Can't InternetOpenUrl!";
 	}
