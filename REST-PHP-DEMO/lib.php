@@ -181,7 +181,7 @@ class req {
 		$this->api_method = '/v1/order/orders';
 		$this->req_method = 'GET';
 		$postdata = [
-			'symbol	' => $symbol,
+			'symbol' => $symbol,
 			'states' => $states
 		];
 		if ($types) $postdata['types'] = $types;
@@ -199,7 +199,7 @@ class req {
 		$this->api_method = '/v1/order/matchresults';
 		$this->req_method = 'GET';
 		$postdata = [
-			'symbol	' => $symbol
+			'symbol' => $symbol
 		];
 		if ($types) $postdata['types'] = $types;
 		if ($start_date) $postdata['start-date'] = $start_date;
