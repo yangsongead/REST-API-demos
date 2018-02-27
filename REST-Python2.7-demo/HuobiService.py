@@ -90,14 +90,15 @@ def get_accounts():
     params = {}
     return api_key_get(params, path)
 
-
+ACCOUNT_ID = 0
 # 获取当前账户资产
 def get_balance(acct_id=None):
     """
     :param acct_id
     :return:
     """
-
+    global ACCOUNT_ID
+    
     if not acct_id:
         try:
             accounts = get_accounts()
