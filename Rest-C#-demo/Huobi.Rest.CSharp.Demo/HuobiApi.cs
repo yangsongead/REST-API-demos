@@ -195,19 +195,20 @@ namespace Huobi.Rest.CSharp.Demo
         {
             var sign = string.Empty;
             StringBuilder sb = new StringBuilder();
-            SortedDictionary<string, string> sortDic = new SortedDictionary<string, string>();
             sb.Append(method.ToString().ToUpper()).Append("\n")
                 .Append(host).Append("\n")
                 .Append(resourcePath).Append("\n");
             //参数排序
             var paraArray = parameters.Split('&');
+            List<string> parametersList = new List<string>();
             foreach (var item in paraArray)
             {
-                sortDic.Add(item.Split('=').First(), item.Split('=').Last());
+                parametersList.Add(item);
             }
-            foreach (var item in sortDic)
+            parametersList.Sort(delegate(string s1, string s2) { return string.CompareOrdinal(s1, s2); });
+            foreach (var item in parametersList)
             {
-                sb.Append(item.Key).Append("=").Append(item.Value).Append("&");
+                sb.Append(item).Append("&");
             }
             sign = sb.ToString().TrimEnd('&');
             //计算签名，将以下两个参数传入加密哈希函数
