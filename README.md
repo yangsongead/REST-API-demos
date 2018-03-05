@@ -5,4 +5,4 @@ demos for REST API.
 
 常见问题请参考[FAQ](https://github.com/huobiapi/API-FAQ/wiki)
 
-可加入api交流QQ群339350262（加群需要同时提供uid和编程语言）进行问题咨询
+可加入api交流QQ群 597821383（加群需要同时提供uid和编程语言）进行问题咨询
