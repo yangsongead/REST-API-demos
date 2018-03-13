@@ -1,5 +1,5 @@
 # RESTAPI-demos
-demos for REST API.
+demos for REST API. 所有demo均来自热心用户提供。
 
 使用demo前请仔细阅读[API文档](https://github.com/huobiapi/API_Docs/wiki)
 
