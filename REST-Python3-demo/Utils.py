@@ -73,7 +73,7 @@ def http_post_request(url, params, add_to_headers=None):
 
 def api_key_get(params, request_path):
     method = 'GET'
-    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+    timestamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     params.update({'AccessKeyId': ACCESS_KEY,
                    'SignatureMethod': 'HmacSHA256',
                    'SignatureVersion': '2',
